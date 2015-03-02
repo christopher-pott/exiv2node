@@ -95,6 +95,58 @@ describe('exiv2', function(){
       });
     });
   });
+  
+  describe('.setUtf8ImageTags()', function(){
+      var temp = dir + '/copy.jpg';
+
+      before(function() {
+        fs.writeFileSync(temp, fs.readFileSync(dir + '/books.jpg'));
+      });
+      it('should write tags containing non-ascii characters to image files', function(done) {
+        var tags = {
+          "Exif.Photo.UserComment" : "Nogle bøger..",
+          "Exif.Canon.OwnerName" : "Sørens kamera",
+          "Iptc.Application2.RecordVersion" : "2",
+          "Xmp.dc.subject" : "ÅØÆ åøæ",
+          "Xmp.dc.rights": "lang=\"x-default\" © Åge Æble"
+        };
+        exiv.setImageTags(temp, tags, function(err){
+          should.not.exist(err);
+
+          exiv.getImageTags(temp, function(err, tags) {
+            tags.should.have.property('Exif.Photo.UserComment', "Nogle bøger..");
+            tags.should.have.property('Exif.Canon.OwnerName', "Sørens kamera");
+            tags.should.have.property('Iptc.Application2.RecordVersion', "2");
+            tags.should.have.property('Xmp.dc.subject', "ÅØÆ åøæ");
+            tags.should.have.property('Xmp.dc.rights', "lang=\"x-default\" © Åge Æble");
+            done();
+          });
+        });
+      })
+      after(function(done) {
+        fs.unlink(temp, done);
+      });
+
+      it('should throw if no file path is provided', function() {
+        (function(){
+          exiv.setImageTags()
+        }).should.throw();
+      });
+
+      it('should throw if no callback is provided', function() {
+        (function(){
+          exiv.setImageTags(dir + '/books.jpg')
+        }).should.throw();
+      });
+
+      it('should report an error on an invalid path', function(done) {
+        exiv.setImageTags('idontexist.jpg', {}, function(err, tags) {
+          should.exist(err);
+          should.not.exist(tags);
+          done();
+        });
+      });
+    });
 
   describe('.deleteImageTags()', function(){
     var temp = dir + '/copy-deltags.jpg';

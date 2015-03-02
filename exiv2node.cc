@@ -211,8 +211,8 @@ static Handle<Value> SetImageTags(const Arguments& args) {
   for (unsigned i = 0; i < keys->Length(); i++) {
     Handle<v8::Value> key = keys->Get(i);
     thread_data->tags->insert(std::pair<std::string, std::string> (
-      *String::AsciiValue(key),
-      *String::AsciiValue(tags->Get(key)))
+      *String::Utf8Value(key),
+      *String::Utf8Value(tags->Get(key)))
     );
   }
 
